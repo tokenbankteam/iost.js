@@ -8,6 +8,7 @@ const Algorithm = require("./lib/crypto/algorithm");
 const Account = require("./iost/account");
 const TxHandler = require("./iost/tx_handler");
 const base58 = require("bs58");
+const SHA3 = require('sha3').SHA3
 
 module.exports = {
   IOST: IOST,
@@ -19,10 +20,11 @@ module.exports = {
   Account: Account,
   TxHandler: TxHandler,
   Bs58: base58,
-  Signature: Signature
+  Signature: Signature,
+  SHA3: SHA3
 };
 
-(function() {
+(function () {
   if (typeof window !== "undefined") {
     window.IOST = module.exports;
   }

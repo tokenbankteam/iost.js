@@ -9,6 +9,7 @@ const Algorithm = require("./lib/crypto/algorithm");
 const Account = require("./iost/account");
 const TxHandler = require("./iost/tx_handler");
 const base58 = require("bs58");
+const SHA3 = require('sha3').SHA3
 
 module.exports = {
   IOST: IOST,
@@ -20,16 +21,17 @@ module.exports = {
   Account: Account,
   TxHandler: TxHandler,
   Bs58: base58,
-  Signature: Signature
+  Signature: Signature,
+  SHA3: SHA3
 };
 
-(function() {
+(function () {
   if (typeof window !== "undefined") {
     window.IOST = module.exports;
   }
 })();
 
-},{"./iost/account":2,"./iost/iost":4,"./iost/tx_handler":5,"./lib/crypto/algorithm":7,"./lib/crypto/key_pair":10,"./lib/crypto/signature":11,"./lib/provider/HTTPProvider":13,"./lib/rpc":14,"./lib/structs":15,"bs58":45}],2:[function(require,module,exports){
+},{"./iost/account":2,"./iost/iost":4,"./iost/tx_handler":5,"./lib/crypto/algorithm":7,"./lib/crypto/key_pair":10,"./lib/crypto/signature":11,"./lib/provider/HTTPProvider":13,"./lib/rpc":14,"./lib/structs":15,"bs58":45,"sha3":80}],2:[function(require,module,exports){
 class Account {
     constructor(id) {
         this._id = id;
