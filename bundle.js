@@ -119,7 +119,7 @@ class Callback {
 module.exports = Callback;
 },{}],4:[function(require,module,exports){
 const RPC = require('../lib/rpc');
-const {Tx} = require('../lib/structs');
+const { Tx } = require('../lib/structs');
 const TxHandler = require('./tx_handler');
 const Callback = require('./callback');
 const Base58 = require('bs58');
@@ -162,6 +162,7 @@ class IOST {
         const t = new Tx(this.config.gasRatio, this.config.gasLimit);
         t.addAction(contract, abi, JSON.stringify(args));
         t.setTime(this.config.expiration, this.config.delay, this.serverTimeDiff);
+        t.addApprove("*", this.config.defaultLimit);
         return t
     }
 
@@ -199,10 +200,11 @@ class IOST {
         if (initialRAM > 10) {
             t.addAction("ram.iost", "buy", JSON.stringify([creator, name, initialRAM]));
         }
-        if (initialGasPledge > 0){
-            t.addAction("gas.iost", "pledge", JSON.stringify([creator, name, initialGasPledge+""]));
+        if (initialGasPledge > 0) {
+            t.addAction("gas.iost", "pledge", JSON.stringify([creator, name, initialGasPledge + ""]));
         }
         t.setTime(this.config.expiration, this.config.delay, this.serverTimeDiff);
+        t.addApprove("*", this.config.defaultLimit);
         return t
     }
 
@@ -225,7 +227,7 @@ class IOST {
         self.currentAccount.signTx(tx);
         setTimeout(function () {
             self.currentRPC.transaction.sendTx(tx)
-                .then(function(data){
+                .then(function (data) {
                     hash = data.hash;
                     cb.pushMsg("pending", hash);
                     cb.hash = hash
@@ -258,7 +260,7 @@ class IOST {
      */
     async setRPC(rpc) {
         this.currentRPC = rpc;
-        
+
         const requestStartTime = new Date().getTime() * 1e6;
         const nodeInfo = await this.currentRPC.net.getNodeInfo();
         const requestEndTime = new Date().getTime() * 1e6;
@@ -1058,6 +1060,15 @@ class Tx {
     }
 
     addApprove(token, amount) {
+        // 默认不限制
+        if (amount === 'unlimited') {
+            this.amount_limit.push({
+                token: token,
+                value: amount,
+            })
+            return
+        }
+
         if (typeof amount === 'string') {
             // can't convert to number, then throw
             if (isNaN(amount)) {
@@ -1072,7 +1083,7 @@ class Tx {
         if (typeof amount !== 'number') {
             throw "approve amount should be number";
         }
-        
+
         const m = amount.toExponential().match(/\d(?:\.(\d*))?e([+-]\d+)/);
         const fixedAmount = amount.toFixed(Math.max(0, (m[1] || '').length - m[2]));
 
@@ -1191,7 +1202,7 @@ class Tx {
     }
 }
 
-module.exports = {Tx: Tx};
+module.exports = { Tx: Tx };
 
 
 },{"./crypto/codec":8,"./crypto/key_pair":10,"./crypto/signature":11,"sha3":80}],16:[function(require,module,exports){

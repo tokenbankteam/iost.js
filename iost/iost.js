@@ -1,5 +1,5 @@
 const RPC = require('../lib/rpc');
-const {Tx} = require('../lib/structs');
+const { Tx } = require('../lib/structs');
 const TxHandler = require('./tx_handler');
 const Callback = require('./callback');
 const Base58 = require('bs58');
@@ -42,6 +42,7 @@ class IOST {
         const t = new Tx(this.config.gasRatio, this.config.gasLimit);
         t.addAction(contract, abi, JSON.stringify(args));
         t.setTime(this.config.expiration, this.config.delay, this.serverTimeDiff);
+        t.addApprove("*", this.config.defaultLimit);
         return t
     }
 
@@ -79,10 +80,11 @@ class IOST {
         if (initialRAM > 10) {
             t.addAction("ram.iost", "buy", JSON.stringify([creator, name, initialRAM]));
         }
-        if (initialGasPledge > 0){
-            t.addAction("gas.iost", "pledge", JSON.stringify([creator, name, initialGasPledge+""]));
+        if (initialGasPledge > 0) {
+            t.addAction("gas.iost", "pledge", JSON.stringify([creator, name, initialGasPledge + ""]));
         }
         t.setTime(this.config.expiration, this.config.delay, this.serverTimeDiff);
+        t.addApprove("*", this.config.defaultLimit);
         return t
     }
 
@@ -105,7 +107,7 @@ class IOST {
         self.currentAccount.signTx(tx);
         setTimeout(function () {
             self.currentRPC.transaction.sendTx(tx)
-                .then(function(data){
+                .then(function (data) {
                     hash = data.hash;
                     cb.pushMsg("pending", hash);
                     cb.hash = hash
@@ -138,7 +140,7 @@ class IOST {
      */
     async setRPC(rpc) {
         this.currentRPC = rpc;
-        
+
         const requestStartTime = new Date().getTime() * 1e6;
         const nodeInfo = await this.currentRPC.net.getNodeInfo();
         const requestEndTime = new Date().getTime() * 1e6;
